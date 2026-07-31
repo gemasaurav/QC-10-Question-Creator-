@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QC:10 - Question Creator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a1a1a;
+      line-height: 1.5;
+      padding: 16px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-top: 12px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      color: #1E88E5;
+      margin-bottom: 4px;
+    }
+    .header p {
+      color: #666;
+      font-size: 0.95rem;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 14px;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #1E88E5;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #1E88E5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #90caf9;
+      cursor: not-allowed;
+    }
+    .question {
+      background: #f8f9fa;
+      border-left: 4px solid #1E88E5;
+      padding: 12px 14px;
+      margin: 10px 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 1rem;
+    }
+    .answer-box {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      color: #1565c0;
+      margin-top: 16px;
+    }
+    .error {
+      background: #ffebee;
+      color: #c62828;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #1E88E5;
+      font-weight: 500;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 0.8rem;
+      color: #888;
+    }
+    .note {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>❓ QC:10</h1>
+    <p>Question Creator — Generate 10 questions whose answer is your word</p>
+  </div>
+
+  <div class="card">
+    <label>xAI API Key</label>
+    <input type="password" id="apiKey" placeholder="Paste your xAI API key here (xai-...)">
+    <p class="note">Get free key → <a href="https://console.x.ai/" target="_blank">console.x.ai</a></p>
+
+    <label style="margin-top:12px;">Enter any word / name / place / number</label>
+    <input type="text" id="word" placeholder="e.g. Einstein, Taj Mahal, 42, Tesla Model S">
+
+    <label>Model</label>
+    <select id="model">
+      <option value="grok-4.5">grok-4.5</option>
+      <option value="grok-3">grok-3</option>
+      <option value="grok-2">grok-2</option>
+    </select>
+
+    <button id="generateBtn" onclick="generateQuestions()">✨ Generate 10 Questions</button>
+  </div>
+
+  <div id="result"></div>
+
+  <div class="footer">
+    QC:10 • Works fully on GitHub Pages • Powered by Grok
+  </div>
+
+<script>
+async function generateQuestions() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const word = document.getElementById('word').value.trim();
+  const model = document.getElementById('model').value;
+  const resultDiv = document.getElementById('result');
+  const btn = document.getElementById('generateBtn');
+
+  if (!apiKey) {
+    resultDiv.innerHTML = '<div class="error">Please enter your xAI API Key</div>';
+    return;
+  }
+  if (!word) {
+    resultDiv.innerHTML = '<div class="error">Please enter a word or phrase</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  resultDiv.innerHTML = '<div class="loading">🧠 Grok is creating 10 clever questions...</div>';
+
+  const prompt = `You are a creative question designer.
+
+The user has given this answer: "${word}"
+
+Create exactly 10 interesting, varied, and high-quality questions where the correct answer is precisely "${word}".
+
+Rules:
+- Each question must have "${word}" as the only correct answer.
+- Make questions of different types: factual, riddle-like, descriptive, historical, scientific, fun, etc.
+- Do NOT include the answer in the questions.
+- Number them 1 to 10.
+- Keep questions clear and engaging.
+- Output ONLY the 10 numbered questions, nothing else.`;
+
+  try {
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant that generates high-quality quiz questions.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.8,
+        max_tokens: 1500
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'API Error');
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content.trim();
+
+    // Parse questions
+    const lines = content.split('\n').filter(line => line.trim());
+    let questions = [];
+    for (let line of lines) {
+      let cleaned = line.trim();
+      if (cleaned.match(/^\d+[\.\)]\s*/)) {
+        cleaned = cleaned.replace(/^\d+[\.\)]\s*/, '');
+      }
+      if (cleaned) questions.push(cleaned);
+    }
+    questions = questions.slice(0, 10);
+
+    // Display
+    let html = `<div class="card">
+      <p style="margin-bottom:12px;font-weight:600;">Here are 10 questions whose answer is <strong>${word}</strong>:</p>`;
+    
+    questions.forEach((q, i) => {
+      html += `<div class="question"><strong>${i+1}.</strong> ${q}</div>`;
+    });
+
+    html += `<div class="answer-box">✅ Answer: ${word}</div></div>`;
+    resultDiv.innerHTML = html;
+
+  } catch (error) {
+    resultDiv.innerHTML = `<div class="error">Error: ${error.message}<br><br>Check your API key and internet connection.</div>`;
+  }
+
+  btn.disabled = false;
+}
+</script>
+
+</body>
+</html>
