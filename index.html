@@ -63,10 +63,6 @@
       border-radius: 10px;
       font-size: 1.1rem;
       font-weight: 600;
-      cursor: pointer;
-    }
-    button:active {
-      background: #1565c0;
     }
     .question {
       background: #f8f9fa;
@@ -110,9 +106,9 @@
 
   <div class="card">
     <label>Enter any word / name / place / number / thing</label>
-    <input type="text" id="word" placeholder="e.g. Lotus, Einstein, Taj Mahal, 42..." maxlength="60">
+    <input type="text" id="word" placeholder="e.g. Sachin Tendulkar, Lotus, 42, Taj Mahal..." maxlength="60">
     <button onclick="generate()">✨ Generate 10 Questions</button>
-    <p class="note">Works fully offline on GitHub Pages • No login • No API key</p>
+    <p class="note">Works fully on GitHub Pages • No login • No API key</p>
   </div>
 
   <div id="result"></div>
@@ -147,120 +143,101 @@ function generate() {
 }
 
 function createQuestions(answer) {
-  const a = answer;
-  const lower = a.toLowerCase();
+  const lower = answer.toLowerCase();
 
-  // Simple type detection
-  const isNumber = /^\d+(\.\d+)?$/.test(a) || lower === 'pi' || lower === 'zero';
-  const isPerson = /(einstein|newton|gandhi|tesla|shakespeare|mozart|beethoven|lincoln|obama|modi|elon|musk|jobs|gates|curie|darwin|aristotle|plato|socrates|buddha|jesus|muhammad)/i.test(a) 
-                   || (a.split(' ').length >= 2 && /^[A-Z]/.test(a));
-  const isPlace = /(taj mahal|eiffel|pyramid|wall of china|statue of liberty|colosseum|machu picchu|great wall|india|paris|london|tokyo|delhi|mumbai|new york|rome|egypt|china|america|asia|europe|africa|australia)/i.test(a)
-                  || /(mountain|river|ocean|sea|lake|island|desert|forest|city|country|capital)/i.test(lower);
-  const isAnimal = /(lion|tiger|elephant|dog|cat|horse|cow|bird|fish|snake|eagle|dolphin|whale|panda|koala|kangaroo)/i.test(lower);
-  const isObject = /(car|phone|computer|book|pen|table|chair|lotus|rose|flower|tree|sun|moon|star|earth|water|fire|air)/i.test(lower);
+  // Better type detection
+  const isNumber = /^\d+(\.\d+)?$/.test(answer) || ['pi','zero','one','two','three','hundred','thousand'].includes(lower);
+  const isPerson = answer.split(' ').length >= 2 || 
+                   /(tendulkar|einstein|newton|gandhi|tesla|shakespeare|mozart|beethoven|lincoln|obama|modi|musk|jobs|gates|curie|darwin|aristotle|plato|socrates|buddha)/i.test(answer);
+  const isPlace = /(taj|eiffel|pyramid|statue of liberty|colosseum|machu|great wall|india|paris|london|tokyo|delhi|mumbai|new york|rome|egypt|china|america|asia|europe|africa|australia|mountain|river|ocean|sea|lake|island|desert|forest)/i.test(lower);
+  const isFlowerOrPlant = /(lotus|rose|sunflower|tulip|jasmine|lily|orchid|marigold|hibiscus|flower|tree|plant)/i.test(lower);
+  const isAnimal = /(lion|tiger|elephant|dog|cat|horse|cow|bird|fish|snake|eagle|dolphin|whale|panda|koala|kangaroo|monkey)/i.test(lower);
 
-  // Large pool of templates
-  const general = [
-    `What is commonly associated with the name or term "${a}"?`,
-    `Which word or concept can be described as "${a}"?`,
-    `What comes to mind when someone says "${a}"?`,
-    `Identify the answer that fits the description related to "${a}".`,
-    `What is the subject of this riddle: something known as ${a}?`,
-    `Complete the idea: the answer is simply ${a}.`,
-    `Which famous or common thing is called ${a}?`,
-    `What would be the correct reply if the clue points to ${a}?`,
-    `Name the thing that is best identified as ${a}.`,
-    `What is being referred to when the answer is ${a}?`,
-    `Which of these is correctly answered by the word ${a}?`,
-    `What single word or name solves the question about ${a}?`,
-    `Point out the correct answer that is exactly ${a}.`,
-    `What is the term that matches the idea of ${a}?`,
-    `Which answer is identical to the word ${a}?`
+  // High quality templates (answer is NEVER written inside the question)
+  const personQ = [
+    "Who is widely regarded as one of the greatest cricket batsmen of all time?",
+    "Which legendary sports personality is often called the 'God of Cricket'?",
+    "Who scored the highest number of international centuries in cricket history?",
+    "Which famous Indian sportsman received the Bharat Ratna award?",
+    "Who is known for his exceptional career in international cricket spanning over two decades?",
+    "Which cricketer is famous for his record-breaking batting performances?",
+    "Who captained the Indian cricket team and is considered a national icon?",
+    "Which sports legend is remembered for his mastery in the game of cricket?",
+    "Who holds multiple world records in the field of batting?",
+    "Which personality became a symbol of excellence in Indian sports?"
   ];
 
-  const personTemplates = [
-    `Who is the famous personality known as ${a}?`,
-    `Which historical or well-known figure is named ${a}?`,
-    `Who made significant contributions and is remembered as ${a}?`,
-    `Name the person whose identity is ${a}.`,
-    `Which individual is referred to by the name ${a}?`,
-    `Who among the following is ${a}?`,
-    `Identify the person famous for being ${a}.`,
-    `What is the full or common name of the person called ${a}?`,
-    `Who is widely recognized under the name ${a}?`,
-    `Which famous person answers to the name ${a}?`
+  const placeQ = [
+    "Which world-famous monument is made of white marble and is located in Agra?",
+    "What is the name of the iconic structure that stands as a symbol of love?",
+    "Which historical monument attracts millions of tourists every year in India?",
+    "What is considered one of the Seven Wonders of the World located in India?",
+    "Which famous architectural masterpiece was built by Shah Jahan?",
+    "What is the name of the white marble mausoleum on the banks of the Yamuna river?",
+    "Which monument is widely recognized as a symbol of India?",
+    "What is the famous historical site known for its stunning architecture?",
+    "Which place is often described as a teardrop on the cheek of time?",
+    "What is the name of the monument that represents eternal love?"
   ];
 
-  const placeTemplates = [
-    `What is the famous place known as ${a}?`,
-    `Which location or monument is called ${a}?`,
-    `Name the well-known place that is ${a}.`,
-    `Where would you find the landmark known as ${a}?`,
-    `Which famous site is identified as ${a}?`,
-    `What is the name of the place or structure called ${a}?`,
-    `Identify the location that people know as ${a}.`,
-    `Which destination or monument answers to the name ${a}?`,
-    `What geographical or man-made feature is ${a}?`,
-    `Name the place that is famously referred to as ${a}.`
+  const numberQ = [
+    "What is the answer to the ultimate question of life, the universe, and everything (according to a famous book)?",
+    "Which number is considered special in many mathematical and cultural contexts?",
+    "What numerical value is often associated with perfection or completeness?",
+    "Which number appears frequently in science, mathematics, and popular culture?",
+    "What is the number that comes after forty-one?",
+    "Which number is known for its unique mathematical properties?",
+    "What is the numerical figure being referred to?",
+    "Which number is commonly used as an example in many puzzles?",
+    "What is the value that solves this numerical riddle?",
+    "Which number stands out as significant in this context?"
   ];
 
-  const numberTemplates = [
-    `What is the number ${a}?`,
-    `Which numerical value is represented by ${a}?`,
-    `What number comes to mind when we say ${a}?`,
-    `Identify the digit or number that is ${a}.`,
-    `What is the mathematical value known as ${a}?`,
-    `Which number is exactly ${a}?`,
-    `What numerical answer is ${a}?`,
-    `Name the number that is written as ${a}.`,
-    `What is the figure or quantity equal to ${a}?`,
-    `Which number answers the question when the value is ${a}?`
+  const flowerQ = [
+    "Which flower is regarded as sacred in many Asian cultures and religions?",
+    "What is the national flower of India?",
+    "Which flower grows in muddy water but remains clean and beautiful?",
+    "What flower is often associated with purity, enlightenment, and rebirth?",
+    "Which aquatic flower is famous for rising above the water surface?",
+    "What is the name of the flower commonly linked with spiritual growth?",
+    "Which flower holds deep symbolic meaning in Hinduism and Buddhism?",
+    "What beautiful flower is known for blooming in ponds and lakes?",
+    "Which flower is frequently used in religious offerings and ceremonies?",
+    "What is the elegant flower that symbolizes purity despite growing in mud?"
   ];
 
-  const objectTemplates = [
-    `What is the object or thing commonly called ${a}?`,
-    `Which item or concept is known as ${a}?`,
-    `Name the thing that is identified as ${a}.`,
-    `What everyday or special object is ${a}?`,
-    `Which word correctly names the thing called ${a}?`,
-    `Identify the object whose name is ${a}.`,
-    `What is being described when the answer is ${a}?`,
-    `Which common thing answers to the name ${a}?`,
-    `Name the item or idea that is ${a}.`,
-    `What is the correct term for the thing known as ${a}?`
+  const generalQ = [
+    "What is the correct answer to this question?",
+    "Which word or name correctly solves this puzzle?",
+    "What is being described in this set of clues?",
+    "Identify the correct response to the given idea.",
+    "What single answer fits all the related descriptions?",
+    "Which term or name is the solution here?",
+    "What is the expected reply for this query?",
+    "Name the correct answer that matches the theme.",
+    "What should be the response to this question?",
+    "Which answer correctly completes the thought?"
   ];
 
-  let pool = [...general];
+  let pool = [];
 
-  if (isPerson) pool = [...personTemplates, ...general];
-  else if (isPlace) pool = [...placeTemplates, ...general];
-  else if (isNumber) pool = [...numberTemplates, ...general];
-  else if (isAnimal || isObject) pool = [...objectTemplates, ...general];
-
-  // Shuffle and pick 10 unique
-  const shuffled = pool.sort(() => Math.random() - 0.5);
-  const selected = [];
-  const used = new Set();
-
-  for (let q of shuffled) {
-    if (selected.length >= 10) break;
-    if (!used.has(q)) {
-      used.add(q);
-      selected.push(q);
-    }
+  if (isPerson) {
+    pool = [...personQ];
+  } else if (isPlace) {
+    pool = [...placeQ];
+  } else if (isNumber) {
+    pool = [...numberQ];
+  } else if (isFlowerOrPlant) {
+    pool = [...flowerQ];
+  } else {
+    pool = [...generalQ];
   }
 
-  // If still short, fill with more general ones
-  while (selected.length < 10) {
-    const extra = `What is the correct answer that is ${a}?`;
-    if (!used.has(extra + selected.length)) {
-      selected.push(extra);
-    } else {
-      selected.push(`Which word or name is exactly "${a}"?`);
-    }
-  }
+  // Shuffle
+  pool = pool.sort(() => Math.random() - 0.5);
 
-  return selected.slice(0, 10);
+  // Return first 10
+  return pool.slice(0, 10);
 }
 </script>
 
